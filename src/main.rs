@@ -18,7 +18,7 @@ where
         for column in (0..width) {
             let l_pixel = unsafe { lhs.get_pixel(column, line).to_luma() };
             let r_pixel = unsafe { rhs.get_pixel(column, line).to_luma() };
-            let diff = ((l_pixel.data[0] as i8 - r_pixel.data[0] as i8).abs() as u32).pow(2);
+            let diff = ((l_pixel.data[0] as i16 - r_pixel.data[0] as i16).abs() as u32).pow(2);
             if max_err < diff {
                 max_err = diff;
             }
