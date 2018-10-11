@@ -40,6 +40,7 @@ where
     let mut psnr_value: Vec<f32> = Vec::with_capacity(channels_size);
     psnr_value.resize(channels_size, 0.0);
     for chan in 0..channels_size {
+        max_err[chan] = max_err[chan].powf(2.0);
         mean_err[chan] = mean_err[chan] / (width * height) as f32;
         if mean_err[chan] != 0.0 {
             psnr_value[chan] =
