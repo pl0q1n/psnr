@@ -25,7 +25,7 @@ where
         for column in 0..width {
             let l_pixel = lhs.get_pixel(column, line);
             let r_pixel = rhs.get_pixel(column, line);
-            
+
             for chan in 0..channels_size {
                 let diff = ((l_pixel.channels()[chan] as i16 - r_pixel.channels()[chan] as i16)
                     .abs() as f32)
@@ -43,19 +43,35 @@ where
         max_err[chan] = max_err[chan].powf(2.0);
         mean_err[chan] = mean_err[chan] / (width * height) as f32;
         if mean_err[chan] != 0.0 {
-            psnr_value[chan] =
-                10.0 * (max_err[chan] / mean_err[chan]).log10();
+            psnr_value[chan] = 10.0 * (max_err[chan] / mean_err[chan]).log10();
         }
     }
 
     return Ok(psnr_value);
 }
 
-fn main() {
-    let img_1 = image::open("test.jpg").unwrap();
-    let img_2 = image::open("test1.jpg").unwrap();
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::ImageBuffer;
 
-    let psnr_val = psnr(img_1, img_2).unwrap();
+    #[test]
+    fn smoke_test() {
+        let original = ImageBuffer::from_fn(8, 8, |_x, _y| image::Luma([255u8]));
+        let edited = ImageBuffer::from_fn(8, 8, |x, y| {
+            if (x, y) == (0, 0) {
+                image::Luma([0u8])
+            } else {
+                image::Luma([255u8])
+            }
+        });
 
-    println!("{:?}", psnr_val);
+        let psnr_val = psnr(original, edited).unwrap();
+
+        // max^2 = 255^2 = 65025
+        // mse = sum(sum(orig - edited)^2)/size = 255^2/8*8 = 1016.015625
+        // psnr = 10 * log_10(max^2/mse) = 10 * log_10(65025/1016.015625)
+        // psnr = 10 * 1.8061799739838869 ~= 18.061
+        assert!(18.1 > psnr_val[0] && psnr_val[0] > 18.0);
+    }
 }
