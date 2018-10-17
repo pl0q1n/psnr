@@ -2,7 +2,7 @@ extern crate image;
 
 use image::{GenericImage, Pixel};
 
-fn psnr<I, P>(lhs: I, rhs: I) -> Result<Vec<f32>, &'static str>
+pub fn psnr<I, P>(lhs: I, rhs: I) -> Result<Vec<f32>, &'static str>
 where
     P: Pixel<Subpixel = u8>,
     I: GenericImage<Pixel = P>,
@@ -60,7 +60,7 @@ mod tests {
         let original = ImageBuffer::from_fn(8, 8, |_x, _y| image::Luma([255u8]));
         let edited = ImageBuffer::from_fn(8, 8, |x, y| {
             if (x, y) == (0, 0) {
-                image::Luma([0u8])
+                image::Luma([252u8])
             } else {
                 image::Luma([255u8])
             }
@@ -69,9 +69,10 @@ mod tests {
         let psnr_val = psnr(original, edited).unwrap();
 
         // max^2 = 255^2 = 65025
-        // mse = sum(sum(orig - edited)^2)/size = 255^2/8*8 = 1016.015625
-        // psnr = 10 * log_10(max^2/mse) = 10 * log_10(65025/1016.015625)
-        // psnr = 10 * 1.8061799739838869 ~= 18.061
-        assert!(18.1 > psnr_val[0] && psnr_val[0] > 18.0);
+        // mse = sum(orig - edited)^2/size = 3^2/8*8 = 0.140625
+        // psnr = 10 * log_10(max^2/mse) = 10 * log_10(65025/0.140625)
+        // psnr ~= 56.65017825412471
+
+        assert!(56.7 > psnr_val[0] && psnr_val[0] > 56.6);
     }
 }
